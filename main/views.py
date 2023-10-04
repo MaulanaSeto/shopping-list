@@ -64,6 +64,10 @@ def show_json_by_id(request, id):
     data = Product.objects.filter(pk=id)
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
+def get_product_json(request):
+    product_item = Product.objects.all()
+    return HttpResponse(serializers.serialize('json', product_item))
+
 def register(request):
     form = UserCreationForm()
     if request.method == "POST":
@@ -95,3 +99,15 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+@csrf_exempt
+def add_product_ajax(request):
+    if request.method == 'POST':
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        description = request.POST.get("description")
+        user = request.user
+        new_product = Product(name=name, price=price, description=description, user=user)
+        new_product.save()
+        return HttpResponse(b"CREATED", status=201)
+    return HttpResponseNotFound()
